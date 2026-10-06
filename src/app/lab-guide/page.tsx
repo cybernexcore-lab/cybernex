@@ -173,17 +173,26 @@ export default function LabGuidePage() {
     <div className="space-y-8 pb-12">
       {/* Hero Header */}
       <div className="bg-[#111625] border border-slate-800 rounded-2xl p-8 relative overflow-hidden">
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>ETHICAL PENTESTING TRAINING LAB GUIDE</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>ETHICAL PENTESTING TRAINING LAB GUIDE</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <span>CyberNex Pentesting Syllabus</span>
+            </h1>
+            <p className="text-xs font-mono text-cyan-400 font-semibold tracking-wider uppercase">
+              SECURE TODAY. EMPOWER TOMORROW.
+            </p>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Welcome to the CyberNex defensive and offensive security training lab. This environment simulates a production SecOps platform intentionally embedded with realistic vulnerabilities. Follow the 16-step penetration testing workflow below to discover, exploit, document, and remediate each vulnerability.
+            </p>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            CyberNex Penetration Testing Syllabus
-          </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Welcome to the CyberNex defensive and offensive security training lab. This environment simulates a production SecOps platform intentionally embedded with realistic vulnerabilities. Follow the 16-step penetration testing workflow below to discover, exploit, document, and remediate each vulnerability.
-          </p>
+
+          <div className="w-24 h-24 rounded-2xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(0,242,254,0.3)] shrink-0 self-center md:self-auto">
+            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover" />
+          </div>
         </div>
 
         {/* Quick Credentials Box */}

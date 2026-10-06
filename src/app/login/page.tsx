@@ -65,12 +65,18 @@ export default function LoginPage() {
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.3)] mb-4">
-            <Lock className="w-6 h-6 text-slate-950" />
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(0,242,254,0.35)] mb-3 p-1">
+            <img src="/cybernex-logo.png" alt="CyberNex" className="w-full h-full object-cover rounded-xl" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">SecOps Terminal Gate</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-1.5">
+            <span>Cyber</span><span className="text-cyan-400">Nex</span>
+            <span className="text-xs font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 ml-1">Gate</span>
+          </h1>
+          <p className="text-[11px] font-mono tracking-wider uppercase text-cyan-400/90 mt-1 font-semibold">
+            Secure Today. Empower Tomorrow.
+          </p>
+          <p className="text-xs text-slate-400 mt-2">
             Authenticate operator credentials to enter defensive telemetry grid
           </p>
         </div>

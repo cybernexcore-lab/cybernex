@@ -1,14 +1,12 @@
-# CyberNex - Web Penetration Testing Lab
+<div align="center">
+  <img src="./public/cybernex-logo.png" width="160" alt="CyberNex Official Logo" style="border-radius: 20px; box-shadow: 0 0 25px rgba(0,242,254,0.3);" />
+  <h1>CyberNex</h1>
+  <p><strong>SECURE TODAY. EMPOWER TOMORROW.</strong></p>
+  <p><em>Local Web Penetration Testing & Vulnerability Remediation Lab</em></p>
 
-[![Strictly Local Lab](https://img.shields.io/badge/Security-Local%20Educational%20Lab-blue.svg)](#)
-[![Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20TypeScript%20%7C%20Tailwind%20%7C%20SQLite-darkgreen.svg)](#)
-
-**CyberNex** is an intentionally vulnerable web application designed for ethical hacking, penetration testing practice, security code auditing, and remediation training.
-
-Simulating a high-tech **Security Operations Center (SOC) & Threat Telemetry Platform**, CyberNex houses realistic security vulnerabilities in a clean, modern cybersecurity-themed user interface.
-
-> ⚠️ **STRICT EDUCATIONAL DISCLAIMER**:
-> This application is strictly an offline educational training lab. It is designed to run exclusively on `localhost` (`127.0.0.1`). It contains **NO malware**, **NO external network communication**, and **NO destructive functionality**. All credentials, API tokens, and user records are completely synthetic fake data.
+  [![Strictly Local Lab](https://img.shields.io/badge/Security-Local%20Educational%20Lab-blue.svg)](#)
+  [![Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20TypeScript%20%7C%20Tailwind%20%7C%20SQLite-darkgreen.svg)](#)
+</div>
 
 ---
 

@@ -35,8 +35,8 @@ export default function Navbar({ user }: NavbarProps) {
       {/* Brand */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(0,242,254,0.3)]">
-            <ShieldAlert className="w-5 h-5 text-slate-950" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(0,242,254,0.3)] group-hover:border-cyan-400 transition-all">
+            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover scale-110" />
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">

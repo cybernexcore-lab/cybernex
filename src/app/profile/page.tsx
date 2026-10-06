@@ -185,14 +185,18 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* Page Header with IDOR Dossier Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <UserIcon className="w-6 h-6 text-cyan-400" />
-            Operator Credentials & Settings
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Manage personal security clearance, cryptographic tokens, and telemetry files
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(0,242,254,0.3)] shrink-0">
+            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover scale-105" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              Operator Credentials & Settings
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Manage personal security clearance, cryptographic tokens, and telemetry files
+            </p>
+          </div>
         </div>
 
         {/* Vulnerability CN-AC-01 Helper: Quick IDOR switcher */}

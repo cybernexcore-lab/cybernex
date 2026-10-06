@@ -140,6 +140,31 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Branded Hero Banner */}
+      <div className="bg-[#111625] border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.3)] shrink-0">
+            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover scale-105" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-white tracking-tight">CyberNex SecOps Grid</h1>
+              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                ACTIVE DEFENSE
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-mono">
+              SECURE TODAY. EMPOWER TOMORROW. — Continuous telemetry node #127.0.0.1
+            </p>
+          </div>
+        </div>
+        <div className="text-right hidden md:block">
+          <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-500/30 px-2.5 py-1 rounded-full">
+            CLEARANCE GATE: AUTHORIZED
+          </span>
+        </div>
+      </div>
+
       {/* Top Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-[#111625] border border-slate-800 rounded-xl p-5 hover:border-cyan-500/30 transition-all">
