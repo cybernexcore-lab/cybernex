@@ -17,7 +17,19 @@ export async function GET(req: NextRequest) {
     // Vulnerability CN-FILE-02: Path Traversal (Directory Traversal)
     // Directly concatenates user input with upload directory without path verification
     // -------------------------------------------------------------------------
-    const targetPath = path.join(process.cwd(), 'public', 'uploads', filename);
+    const isServerless = Boolean(
+      process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.NETLIFY
+    );
+    let targetPath = path.join(process.cwd(), 'public', 'uploads', filename);
+
+    if (!fs.existsSync(targetPath) && isServerless) {
+      const tmpPath = path.join('/tmp', 'uploads', filename);
+      if (fs.existsSync(tmpPath)) {
+        targetPath = tmpPath;
+      }
+    }
 
     if (!fs.existsSync(targetPath)) {
       return new NextResponse(

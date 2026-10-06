@@ -24,7 +24,14 @@ export async function POST(req: NextRequest) {
     // No extension check, no MIME check. File saved with original filename.
     // -------------------------------------------------------------------------
     const filename = file.name;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    const isServerless = Boolean(
+      process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.NETLIFY
+    );
+    const uploadDir = isServerless
+      ? path.join('/tmp', 'uploads')
+      : path.join(process.cwd(), 'public', 'uploads');
 
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
