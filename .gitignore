@@ -42,3 +42,7 @@ next-env.d.ts
 
 # local sqlite runtime db
 database/cybernex.db
+
+# assistant files
+AGENTS.md
+CLAUDE.md
