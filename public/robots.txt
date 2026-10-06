@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Disallow: /api/debug
+Disallow: /api/system-logs
+Disallow: /database/cybernex_backup.sql
+Disallow: /lab-guide
