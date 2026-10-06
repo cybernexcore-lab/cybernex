@@ -1,48 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #0a0d14;
-  --foreground: #f8fafc;
-  --cyber-card: #111625;
-  --cyber-card-hover: #17223b;
-  --cyber-border: #1e293b;
-  --cyber-cyan: #00f2fe;
-  --cyber-blue: #3b82f6;
-  --cyber-emerald: #10b981;
-  --cyber-amber: #f59e0b;
-  --cyber-rose: #f43f5e;
+@theme {
+  --font-display: "Chakra Petch", "Rajdhani", sans-serif;
+  --font-mono: "JetBrains Mono", "Space Mono", monospace;
+  --font-sans: "Chakra Petch", "Rajdhani", sans-serif;
+
+  --color-abyss: #030508;
+  --color-panel: #070b13;
+  --color-surface: #0e1626;
+  --color-border-dim: #152033;
+  --color-border-bright: #243452;
+  --color-crimson: #ff003c;
+  --color-cyan: #00f2fe;
+  --color-amber: #ffb800;
+  --color-emerald: #00ff88;
 }
 
+:root {
+  --font-display: "Chakra Petch", "Rajdhani", sans-serif;
+  --font-mono: "JetBrains Mono", "Space Mono", monospace;
+  --bg-abyss: #030508;
+  --bg-panel: #070b13;
+  --bg-surface: #0e1626;
+  --border-dim: #152033;
+  --border-bright: #243452;
+  --signal-crimson: #ff003c;
+  --signal-cyan: #00f2fe;
+  --signal-amber: #ffb800;
+  --signal-emerald: #00ff88;
+}
+
+/* Base Body Styling */
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg-abyss);
+  color: #f1f5f9;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-image: 
-    radial-gradient(circle at 15% 10%, rgba(0, 242, 254, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.04) 0%, transparent 40%);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(255, 0, 60, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(21, 32, 51, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 32, 51, 0.15) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
 }
 
-/* Custom glow utility classes */
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.25);
+/* CRT Scanlines Overlay */
+.scanlines-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.35) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.015),
+    rgba(0, 255, 0, 0.008),
+    rgba(0, 0, 255, 0.015)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+/* Tactical Chamfered Polygon Cuts */
+.tactical-cut {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
 }
 
-.glow-rose {
-  box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+.tactical-cut-sm {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
 }
 
-@keyframes pulseGlow {
-  0% { opacity: 0.5; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1.1); }
-  100% { opacity: 0.5; transform: scale(0.95); }
+.tactical-cut-tr {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    0 100%
+  );
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 2s infinite ease-in-out;
+.tactical-cut-bl {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+}
+
+/* HUD Corner Brackets Frame */
+.hud-corner-frame {
+  position: relative;
+}
+
+.hud-corner-frame::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid var(--signal-cyan);
+  border-left: 2px solid var(--signal-cyan);
+  pointer-events: none;
+}
+
+.hud-corner-frame::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid var(--signal-cyan);
+  border-right: 2px solid var(--signal-cyan);
+  pointer-events: none;
+}
+
+/* Crimson Corner Brackets */
+.hud-corner-frame-crimson::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid var(--signal-crimson);
+  border-left: 2px solid var(--signal-crimson);
+  pointer-events: none;
+}
+
+.hud-corner-frame-crimson::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid var(--signal-crimson);
+  border-right: 2px solid var(--signal-crimson);
+  pointer-events: none;
+}
+
+/* Den of Wolves Mechanical Tactical Buttons */
+.tactical-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 0.65rem 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  cursor: pointer;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.tactical-btn-cyan {
+  background-color: rgba(0, 242, 254, 0.12);
+  border: 1px solid rgba(0, 242, 254, 0.45);
+  color: #00f2fe;
+}
+
+.tactical-btn-cyan:hover {
+  background-color: #00f2fe;
+  color: #030508;
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+  transform: translateY(-1px);
+}
+
+.tactical-btn-crimson {
+  background-color: rgba(255, 0, 60, 0.12);
+  border: 1px solid rgba(255, 0, 60, 0.45);
+  color: #ff003c;
+}
+
+.tactical-btn-crimson:hover {
+  background-color: #ff003c;
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(255, 0, 60, 0.6);
+  transform: translateY(-1px);
+}
+
+.tactical-btn-neutral {
+  background-color: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  color: #cbd5e1;
+}
+
+.tactical-btn-neutral:hover {
+  background-color: rgba(30, 41, 59, 1);
+  border-color: #94a3b8;
+  color: #ffffff;
+}
+
+/* Glitch Text Micro-FX */
+@keyframes glitch-skew {
+  0% { transform: skew(0deg); }
+  20% { transform: skew(-2deg); }
+  40% { transform: skew(2deg); }
+  60% { transform: skew(-1deg); }
+  80% { transform: skew(1deg); }
+  100% { transform: skew(0deg); }
+}
+
+.glitch-hover:hover {
+  animation: glitch-skew 0.3s ease-in-out infinite;
+  text-shadow: 2px 0 #ff003c, -2px 0 #00f2fe;
+}
+
+/* Custom Scrollbar for Tactical Terminals */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050811;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00f2fe;
 }

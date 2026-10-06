@@ -41,7 +41,7 @@ export default function DomXssSink() {
   return (
     <div
       id="live-telemetry-notice"
-      className="bg-cyan-950/60 border-y border-cyan-500/40 text-cyan-200 px-6 py-2.5 text-xs font-mono flex items-center justify-between"
+      className="bg-[#05111d] border-y border-cyan-500/60 text-cyan-300 px-6 py-2.5 text-xs font-mono shadow-[0_0_15px_rgba(0,242,254,0.2)] flex items-center justify-between"
       dangerouslySetInnerHTML={{ __html: htmlContent }}
     />
   );

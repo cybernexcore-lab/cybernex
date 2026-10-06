@@ -14,6 +14,10 @@ import {
   Bug,
   RotateCcw,
   CheckCircle,
+  Radio,
+  Cpu,
+  Layers,
+  Flame,
 } from 'lucide-react';
 
 interface LabObjective {
@@ -110,8 +114,8 @@ const OBJECTIVES: LabObjective[] = [
   },
   {
     id: 'CN-FILE-01',
-    category: 'File Vulnerabilities',
-    name: 'Unrestricted File Upload (Local Demo)',
+    category: 'File Handling',
+    name: 'Unrestricted File Upload (Executable Storage)',
     targetEndpoint: '/api/upload',
     tools: ['Burp Suite', 'Browser Form'],
     objective: 'Upload an arbitrary HTML or SVG file containing executable script payloads to public storage.',
@@ -120,28 +124,28 @@ const OBJECTIVES: LabObjective[] = [
   },
   {
     id: 'CN-FILE-02',
-    category: 'File Vulnerabilities',
-    name: 'Path Traversal (Arbitrary File Read)',
+    category: 'File Handling',
+    name: 'Path Traversal (Arbitrary File Retrieval)',
     targetEndpoint: '/api/download?file=...',
     tools: ['curl', 'Burp Repeater', 'Browser URL'],
-    objective: 'Traverse out of the uploads folder to read sensitive configuration and backup files (such as database/schema.sql or database/cybernex_backup.sql).',
+    objective: 'Traverse out of the uploads directory to read sensitive configuration files (e.g. database/cybernex_backup.sql).',
     hint: 'The download endpoint takes a "file" parameter. What happens when relative directory traversal sequences (../../) are appended?',
     remediationSnippet: `// Remediate by sanitizing base filename and enforcing path containment:\nconst safeName = path.basename(filename);\nconst target = path.resolve(UPLOAD_DIR, safeName);\nif (!target.startsWith(UPLOAD_DIR)) throw new Error('Access denied');`,
   },
   {
     id: 'CN-CSRF-01',
-    category: 'CSRF',
-    name: 'Cross-Site Request Forgery (Profile Modification)',
+    category: 'Session & State',
+    name: 'Cross-Site Request Forgery (Profile Mutation)',
     targetEndpoint: '/api/user/update',
     tools: ['Burp CSRF PoC Generator', 'HTML PoC file'],
-    objective: 'Force an authenticated operator into executing unintended state-changing profile or credential modifications.',
-    hint: 'Check whether the update endpoint validates any CSRF tokens or checks the Origin / Referer headers, and verify cookie SameSite attributes.',
+    objective: 'Force an authenticated operator into executing unintended state-changing profile or clearance modifications.',
+    hint: 'Check whether the update endpoint validates any CSRF tokens or checks Origin / Referer headers, and verify cookie SameSite attributes.',
     remediationSnippet: `// Remediate by verifying CSRF tokens and SameSite cookies:\nresponse.cookies.set('token', val, { sameSite: 'lax', httpOnly: true, secure: true });`,
   },
   {
     id: 'CN-MISC-01',
-    category: 'Business Logic & Disclosure',
-    name: 'Computational Credit Negative Balance Flaw',
+    category: 'Business Logic',
+    name: 'Computational Credit Negative Balance Exploitation',
     targetEndpoint: '/api/transfer-credits',
     tools: ['Burp Repeater', 'DevTools Network Tab'],
     objective: 'Artificially inflate your SecOps computational credit quota by transferring a negative integer amount.',
@@ -171,98 +175,101 @@ export default function LabGuidePage() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Header */}
-      <div className="bg-[#111625] border border-slate-800 rounded-2xl p-8 relative overflow-hidden">
+      {/* Tactical Hero Header */}
+      <div className="bg-[#070b13] border border-[#152033] p-6 sm:p-8 tactical-cut relative shadow-2xl">
+        <span className="absolute top-2 left-2 text-[10px] font-mono text-cyan-400/60">+</span>
+        <span className="absolute bottom-2 right-2 text-[10px] font-mono text-cyan-400/60">+</span>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>ETHICAL PENTESTING TRAINING LAB GUIDE</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 tactical-cut-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span>DEFENSIVE & OFFENSIVE SYLLABUS BRIEFING</span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-              <span>CyberNex Pentesting Syllabus</span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wider text-white">
+              CYBERNEX PENTESTING SYLLABUS
             </h1>
-            <p className="text-xs font-mono text-cyan-400 font-semibold tracking-wider uppercase">
-              SECURE TODAY. EMPOWER TOMORROW.
+            <p className="text-xs font-mono text-cyan-400 font-bold tracking-widest uppercase">
+              SECURE TODAY. EMPOWER TOMORROW. — MISSION MATRIX
             </p>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Welcome to the CyberNex defensive and offensive security training lab. This environment simulates a production SecOps platform intentionally embedded with realistic vulnerabilities. Follow the 16-step penetration testing workflow below to discover, exploit, document, and remediate each vulnerability.
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              Welcome to the CyberNex penetration-testing operations academy. This environment intentionally embeds real-world OWASP Top 10 vulnerabilities within an authentic SecOps architecture. Execute discovery, exploitation, and code-level remediation across all indexed challenges.
             </p>
           </div>
 
-          <div className="w-24 h-24 rounded-2xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(0,242,254,0.3)] shrink-0 self-center md:self-auto">
-            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover" />
+          <div className="w-20 h-20 bg-[#030508] border border-cyan-500/40 p-1 flex items-center justify-center tactical-cut shrink-0 shadow-[0_0_20px_rgba(0,242,254,0.25)]">
+            <img src="/cybernex-logo.png" alt="CyberNex" className="w-full h-full object-cover" />
           </div>
         </div>
 
-        {/* Quick Credentials Box */}
-        <div className="mt-6 p-4 rounded-xl bg-[#0b1120] border border-slate-800 flex flex-wrap gap-6 text-xs font-mono">
-          <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Default Administrator</span>
-            <span className="text-cyan-400 font-bold">admin</span> / <span className="text-slate-300">AdminPassword2026!</span>
+        {/* Quick Synthetic Personnel Table */}
+        <div className="mt-6 pt-5 border-t border-[#152033] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
+          <div className="p-3 bg-[#030508] border border-[#152033] tactical-cut-sm">
+            <span className="text-slate-500 text-[10px] uppercase block">TIER 1 ADMINISTRATOR</span>
+            <span className="text-rose-400 font-bold">admin</span> / <span className="text-slate-300">AdminPassword2026!</span>
           </div>
-          <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Senior Analyst</span>
+          <div className="p-3 bg-[#030508] border border-[#152033] tactical-cut-sm">
+            <span className="text-slate-500 text-[10px] uppercase block">TIER 2 SENIOR ANALYST</span>
             <span className="text-cyan-400 font-bold">alice</span> / <span className="text-slate-300">alice_hunter2</span>
           </div>
-          <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Junior Operator</span>
-            <span className="text-cyan-400 font-bold">bob</span> / <span className="text-slate-300">bobpassword123</span>
+          <div className="p-3 bg-[#030508] border border-[#152033] tactical-cut-sm">
+            <span className="text-slate-500 text-[10px] uppercase block">TIER 3 OPERATOR</span>
+            <span className="text-slate-300 font-bold">bob</span> / <span className="text-slate-300">bobpassword123</span>
           </div>
-          <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Database Reset</span>
-            <span className="text-amber-400">npm run reset-db</span>
+          <div className="p-3 bg-[#030508] border border-amber-500/30 text-amber-300 tactical-cut-sm flex flex-col justify-center">
+            <span className="text-amber-500/70 text-[10px] uppercase block">DATABASE STATE RESTORE</span>
+            <span className="font-bold">npm run reset-db</span>
           </div>
         </div>
       </div>
 
-      {/* Recommended Testing Methodology */}
-      <div className="bg-[#111625] border border-slate-800 rounded-xl p-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
-          <Compass className="w-5 h-5 text-cyan-400" />
-          Recommended 16-Step Pentesting Workflow
+      {/* Recommended 16-Step Pentesting Workflow */}
+      <div className="bg-[#070b13] border border-[#152033] p-6 tactical-cut shadow-xl">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 mb-4">
+          <Compass className="w-4 h-4 text-cyan-400" />
+          <span>STANDARDIZED 16-STAGE SECURITY AUDITING CYCLE</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
           {[
-            '1. Reconnaissance (robots.txt, headers)',
-            '2. Directory & Route Discovery',
-            '3. Operator Login Testing',
-            '4. Authentication & Enumeration',
-            '5. Session Token Security Testing',
-            '6. SQL Injection Discovery',
-            '7. Reflected & Stored XSS',
-            '8. DOM-based XSS Execution',
-            '9. IDOR & Broken Object Auth',
-            '10. Privilege Escalation',
+            '01. Reconnaissance (robots.txt, headers)',
+            '02. Route & Directory Discovery',
+            '03. Operator Gate Analysis',
+            '04. Authentication & Enumeration',
+            '05. Session Token Hijacking & Tampering',
+            '06. SQL Injection Discovery (UNION)',
+            '07. Reflected & Stored XSS Sinks',
+            '08. DOM-based XSS Execution',
+            '09. IDOR Object References',
+            '10. Privilege Elevation (Mass Assign)',
             '11. CSRF Attack Reproduction',
-            '12. Unrestricted File Uploads',
-            '13. Path & Directory Traversal',
+            '12. Unrestricted File Ingestion',
+            '13. Path & Directory Traversal (../)',
             '14. Business Logic Flaw Analysis',
-            '15. Source Code Remediation',
+            '15. Source Code Patch Formulation',
             '16. Retesting & Patch Verification',
           ].map((step, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-lg bg-[#0b1120] border border-slate-800/80 text-slate-300 flex items-center gap-2"
+              className="p-2.5 bg-[#030508] border border-[#152033] text-slate-300 flex items-center gap-2 tactical-cut-sm"
             >
               <CheckCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-              <span>{step}</span>
+              <span className="text-[11px] truncate">{step}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Category Filter Buttons */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      {/* Category Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 font-mono text-xs">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setFilterCategory(cat)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 py-2 uppercase tracking-wider tactical-cut-sm border transition-all cursor-pointer whitespace-nowrap ${
               filterCategory === cat
-                ? 'bg-cyan-500 text-slate-950 font-semibold'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.3)] font-bold'
+                : 'bg-[#070b13] border-[#152033] text-slate-400 hover:text-white hover:border-slate-500'
             }`}
           >
             {cat}
@@ -279,37 +286,37 @@ export default function LabGuidePage() {
           return (
             <div
               key={item.id}
-              className="bg-[#111625] border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all"
+              className="bg-[#070b13] border border-[#152033] tactical-cut p-5 sm:p-6 hover:border-cyan-500/40 transition-all shadow-xl"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#152033]">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold">
+                  <span className="font-mono text-xs px-2.5 py-1 tactical-cut-sm bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold">
                     {item.id}
                   </span>
-                  <h3 className="font-bold text-sm text-white">{item.name}</h3>
+                  <h3 className="font-bold text-sm text-white uppercase tracking-wider">{item.name}</h3>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                    {item.targetEndpoint}
+                  <span className="text-[11px] font-mono text-slate-400 bg-[#030508] px-2.5 py-1 tactical-cut-sm border border-[#152033]">
+                    ENDPOINT: {item.targetEndpoint}
                   </span>
                 </div>
               </div>
 
               {/* Objective Description */}
-              <div className="mt-3 text-xs text-slate-300 leading-relaxed">
-                <strong className="text-slate-100">Objective: </strong>
+              <div className="mt-3.5 text-xs text-slate-300 leading-relaxed font-sans">
+                <strong className="text-white font-mono uppercase text-[11px] mr-1.5">[MISSION OBJECTIVE]:</strong>
                 {item.objective}
               </div>
 
               {/* Tools recommendation */}
-              <div className="mt-2.5 flex items-center gap-2 text-[11px]">
-                <span className="text-slate-500 font-mono">Recommended Tools:</span>
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span className="text-slate-500 font-mono text-[10px] uppercase">AUDIT TOOLING:</span>
                 <div className="flex gap-1.5 flex-wrap">
                   {item.tools.map((t, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono"
+                      className="px-2 py-0.5 tactical-cut-sm bg-[#030508] border border-[#1e293b] text-slate-300 font-mono text-[10px]"
                     >
                       {t}
                     </span>
@@ -318,36 +325,40 @@ export default function LabGuidePage() {
               </div>
 
               {/* Progressive Hints & Remediation Accordions */}
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap gap-3">
+              <div className="mt-4 pt-3.5 border-t border-[#152033] flex flex-wrap gap-4 font-mono text-xs">
                 <button
                   onClick={() => toggleHint(item.id)}
-                  className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors font-mono cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer uppercase font-bold"
                 >
                   {isHintOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  <span>{isHintOpen ? 'Hide Beginner Hint' : 'Reveal Beginner Hint'}</span>
+                  <span>{isHintOpen ? 'COLLAPSE INTEL CLUE' : 'DECRYPT INTEL CLUE'}</span>
                 </button>
 
                 <button
                   onClick={() => toggleRemediation(item.id)}
-                  className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors font-mono cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer uppercase font-bold"
                 >
                   {isRemOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  <span>{isRemOpen ? 'Hide Remediation Diff' : 'View Remediation Patch'}</span>
+                  <span>{isRemOpen ? 'HIDE REMEDIATION PATCH' : 'VIEW CODE REMEDIATION DIFF'}</span>
                 </button>
               </div>
 
               {/* Hint Reveal Box */}
               {isHintOpen && (
-                <div className="mt-3 p-3 rounded-lg bg-amber-950/25 border border-amber-500/30 text-amber-200 text-xs font-mono leading-relaxed">
-                  <span className="text-amber-400 font-bold block mb-1">Investigation Clue:</span>
+                <div className="mt-3.5 p-3.5 bg-amber-950/20 border border-amber-500/40 text-amber-200 text-xs font-mono leading-relaxed tactical-cut-sm">
+                  <span className="text-amber-400 font-bold block mb-1 uppercase tracking-wider text-[11px]">
+                    [TACTICAL INVESTIGATION CLUE]:
+                  </span>
                   {item.hint}
                 </div>
               )}
 
               {/* Remediation Patch Code Box */}
               {isRemOpen && (
-                <div className="mt-3 p-3 rounded-lg bg-[#070a10] border border-emerald-500/30 text-xs font-mono overflow-x-auto">
-                  <span className="text-emerald-400 font-bold block mb-1.5">// Suggested Code Fix</span>
+                <div className="mt-3.5 p-4 bg-[#030508] border border-emerald-500/40 text-xs font-mono overflow-x-auto tactical-cut-sm shadow-xl">
+                  <span className="text-emerald-400 font-bold block mb-2 uppercase tracking-wider text-[11px]">
+                    // SUGGESTED DEFENSIVE SOURCE PATCH
+                  </span>
                   <pre className="text-slate-300 text-[11px] leading-relaxed">
                     {item.remediationSnippet}
                   </pre>

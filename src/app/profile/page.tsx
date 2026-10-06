@@ -12,6 +12,10 @@ import {
   Send,
   AlertTriangle,
   CheckCircle2,
+  Terminal,
+  Fingerprint,
+  Cpu,
+  Layers,
 } from 'lucide-react';
 import { User } from '@/lib/auth';
 
@@ -48,10 +52,10 @@ export default function ProfilePage() {
     async function fetchProfiles() {
       setLoading(true);
       try {
-        // Fetch current user or target user via IDOR lookup
+        // CN-AC-01 IDOR: Resolves user based on targetIdParam query without clearance check
         const lookupUrl = targetIdParam
           ? `/api/user/lookup?id=${targetIdParam}`
-          : `/api/user/lookup?id=1`; // fallback or self
+          : `/api/user/lookup?id=1`;
 
         const res = await fetch(lookupUrl);
         const data = await res.json();
@@ -66,7 +70,7 @@ export default function ProfilePage() {
           setRole(u.role || 'user');
           setBio(u.bio || '');
         } else {
-          setError(data.error || 'Failed to resolve dossier');
+          setError(data.error || 'Failed to resolve dossier record');
         }
       } catch (err: any) {
         setError(err.message);
@@ -100,18 +104,25 @@ export default function ProfilePage() {
           bio,
         }),
       });
-
       const data = await res.json();
       if (res.ok && data.success) {
-        setMsg(data.message || 'Profile successfully updated.');
+        setMsg('Dossier record updated in central defensive ledger.');
         if (targetUser) {
-          setTargetUser({ ...targetUser, full_name: fullName, email, role, department });
+          setTargetUser({
+            ...targetUser,
+            full_name: fullName,
+            email,
+            phone,
+            department,
+            role,
+            bio,
+          });
         }
       } else {
-        setError(data.error || 'Update failed');
+        setError(data.error || 'Dossier mutation rejected');
       }
     } catch (err: any) {
-      setError('Network communication failed: ' + err.message);
+      setError(err.message);
     }
   };
 
@@ -119,25 +130,28 @@ export default function ProfilePage() {
     e.preventDefault();
     setTransferMsg(null);
     try {
+      // Vulnerability CN-MISC-02: Negative credit transfer business logic flaw
       const res = await fetch('/api/transfer-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient: transferRecipient,
-          amount: transferAmount,
+          amount: Number(transferAmount),
         }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setTransferMsg(`Success: Reallocated ${data.transferred} credits to @${data.recipient}. New balance: ${data.newBalance}`);
+        setTransferMsg(`[SUCCESS] Transferred ${transferAmount} credits to @${transferRecipient}. New balance: ${data.sender_credits} PTS`);
         if (targetUser) {
-          setTargetUser({ ...targetUser, credits: data.newBalance });
+          setTargetUser({ ...targetUser, credits: data.sender_credits });
         }
+        setTransferAmount('');
+        setTransferRecipient('');
       } else {
-        setTransferMsg('Error: ' + data.error);
+        setTransferMsg('Transaction Fault: ' + (data.error || 'Failed'));
       }
     } catch (err: any) {
-      setTransferMsg('Error: ' + err.message);
+      setTransferMsg('Network protocol fault: ' + err.message);
     }
   };
 
@@ -151,18 +165,19 @@ export default function ProfilePage() {
     if (isAvatar) formData.append('is_avatar', '1');
 
     try {
+      // Vulnerability CN-FILE-01: Unrestricted file upload
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setUploadMsg(`File uploaded: ${data.url}`);
+        setUploadMsg(`File written to storage: ${data.url}`);
         if (isAvatar && targetUser) {
           setTargetUser({ ...targetUser, avatar: data.filename });
         }
       } else {
-        setUploadMsg('Error: ' + data.error);
+        setUploadMsg('Storage Error: ' + data.error);
       }
     } catch (err: any) {
       setUploadMsg('Upload failed: ' + err.message);
@@ -170,81 +185,85 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="text-center py-16 text-slate-500 font-mono text-sm">Resolving dossier metadata...</div>;
+    return (
+      <div className="text-center py-24 font-mono text-xs text-cyan-400 animate-pulse">
+        [INITIALIZING CIPHER] RESOLVING CLASSIFIED DOSSIER TELEMETRY...
+      </div>
+    );
   }
 
   if (!targetUser) {
     return (
-      <div className="p-6 bg-[#111625] border border-rose-500/40 rounded-xl text-rose-300 font-mono text-sm">
-        {error || 'Target operator dossier not found.'}
+      <div className="p-6 bg-[#070b13] border border-rose-500/50 text-rose-300 font-mono text-xs tactical-cut">
+        {error || 'Target operator dossier not indexed.'}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* Page Header with IDOR Dossier Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden border border-cyan-500/40 bg-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(0,242,254,0.3)] shrink-0">
-            <img src="/cybernex-logo.png" alt="CyberNex Logo" className="w-full h-full object-cover scale-105" />
+      <div className="bg-[#070b13] border border-[#152033] p-5 sm:p-6 tactical-cut flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 bg-[#030508] border border-cyan-500/40 flex items-center justify-center tactical-cut-sm shadow-[0_0_15px_rgba(0,242,254,0.2)]">
+            <Fingerprint className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              Operator Credentials & Settings
+            <h1 className="text-xl font-bold uppercase tracking-wider text-white">
+              OPERATOR DOSSIER // CLASSIFIED
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Manage personal security clearance, cryptographic tokens, and telemetry files
+            <p className="text-xs font-mono text-slate-400 mt-0.5">
+              CLEARANCE PROFILE, CRYPTOGRAPHIC IDENTITIES & COMPUTATIONAL LEDGER
             </p>
           </div>
         </div>
 
         {/* Vulnerability CN-AC-01 Helper: Quick IDOR switcher */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-slate-500">Switch Dossier:</span>
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-slate-500 text-[11px] uppercase">SWITCH DOSSIER:</span>
           <button
             onClick={() => router.push('/profile?id=1')}
-            className={`px-2.5 py-1 text-xs font-mono rounded border transition-colors cursor-pointer ${
+            className={`px-3 py-1 text-xs font-mono uppercase tracking-wider tactical-cut-sm border transition-all cursor-pointer ${
               targetUser.id === 1
-                ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                ? 'bg-rose-500/20 text-rose-400 border-rose-500/60 shadow-[0_0_12px_rgba(255,0,60,0.3)]'
+                : 'bg-[#030508] text-slate-400 border-[#152033] hover:text-white hover:border-slate-500'
             }`}
           >
-            #1 Admin
+            #1 ADMIN
           </button>
           <button
             onClick={() => router.push('/profile?id=2')}
-            className={`px-2.5 py-1 text-xs font-mono rounded border transition-colors cursor-pointer ${
+            className={`px-3 py-1 text-xs font-mono uppercase tracking-wider tactical-cut-sm border transition-all cursor-pointer ${
               targetUser.id === 2
-                ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/60 shadow-[0_0_12px_rgba(0,242,254,0.3)]'
+                : 'bg-[#030508] text-slate-400 border-[#152033] hover:text-white hover:border-slate-500'
             }`}
           >
-            #2 Alice
+            #2 ALICE
           </button>
           <button
             onClick={() => router.push('/profile?id=3')}
-            className={`px-2.5 py-1 text-xs font-mono rounded border transition-colors cursor-pointer ${
+            className={`px-3 py-1 text-xs font-mono uppercase tracking-wider tactical-cut-sm border transition-all cursor-pointer ${
               targetUser.id === 3
-                ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                ? 'bg-slate-700/40 text-slate-200 border-slate-500'
+                : 'bg-[#030508] text-slate-400 border-[#152033] hover:text-white hover:border-slate-500'
             }`}
           >
-            #3 Bob
+            #3 BOB
           </button>
         </div>
       </div>
 
       {/* Status Messages */}
       {msg && (
-        <div className="p-3.5 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+        <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/50 text-emerald-300 text-xs font-mono flex items-center gap-2 tactical-cut-sm">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{msg}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs font-mono flex items-center gap-2">
+        <div className="p-3.5 bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono flex items-center gap-2 tactical-cut-sm">
           <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
           <span>{error}</span>
         </div>
@@ -252,12 +271,12 @@ export default function ProfilePage() {
 
       {/* Main Grid: Left Details & Right Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Col: Dossier Overview */}
+        {/* Left Col: Dossier Overview & Credit Transfer */}
         <div className="space-y-6">
-          <div className="bg-[#111625] border border-slate-800 rounded-xl p-6 text-center">
+          <div className="bg-[#070b13] border border-[#152033] tactical-cut p-6 text-center shadow-xl">
             {/* Avatar */}
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 p-0.5 shadow-[0_0_20px_rgba(0,242,254,0.3)] mb-4 overflow-hidden">
-              <div className="w-full h-full rounded-full bg-[#0b1120] flex items-center justify-center overflow-hidden">
+            <div className="w-24 h-24 mx-auto tactical-cut-sm bg-[#030508] border-2 border-cyan-500/40 p-1 shadow-[0_0_20px_rgba(0,242,254,0.25)] mb-4 overflow-hidden">
+              <div className="w-full h-full bg-[#070b13] flex items-center justify-center overflow-hidden">
                 {targetUser.avatar && targetUser.avatar !== 'default.png' ? (
                   <img
                     src={`/uploads/${targetUser.avatar}`}
@@ -268,51 +287,53 @@ export default function ProfilePage() {
                     }}
                   />
                 ) : (
-                  <span className="text-2xl font-bold font-mono text-cyan-400">
+                  <span className="text-3xl font-extrabold font-mono text-cyan-400">
                     {targetUser.username.slice(0, 2).toUpperCase()}
                   </span>
                 )}
               </div>
             </div>
 
-            <h2 className="text-lg font-bold text-white">{targetUser.full_name}</h2>
+            <h2 className="text-lg font-bold text-white uppercase tracking-wider">{targetUser.full_name}</h2>
             <p className="text-xs text-slate-400 font-mono mt-0.5">@{targetUser.username}</p>
 
             <div className="mt-3">
               <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-mono font-bold uppercase border ${
+                className={`inline-block px-3 py-1 text-[11px] font-mono font-bold uppercase border tactical-cut-sm ${
                   targetUser.role === 'admin'
-                    ? 'bg-rose-500/15 text-rose-400 border-rose-500/40'
+                    ? 'bg-rose-500/15 text-rose-400 border-rose-500/50 shadow-[0_0_12px_rgba(255,0,60,0.25)]'
                     : targetUser.role === 'analyst'
-                    ? 'bg-blue-500/15 text-blue-400 border-blue-500/40'
-                    : 'bg-slate-700/40 text-slate-300 border-slate-600'
+                    ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/50 shadow-[0_0_12px_rgba(0,242,254,0.25)]'
+                    : 'bg-slate-800/40 text-slate-300 border-slate-600'
                 }`}
               >
-                CLEARANCE: {targetUser.role}
+                CLEARANCE // {targetUser.role.toUpperCase()}
               </span>
             </div>
 
             {/* Dossier Meta */}
-            <div className="mt-6 pt-6 border-t border-slate-800 text-left space-y-3.5 text-xs">
+            <div className="mt-6 pt-6 border-t border-[#152033] text-left space-y-3 font-mono text-xs">
               <div>
-                <span className="text-slate-500 uppercase tracking-wider text-[10px] block">Operator ID</span>
-                <span className="font-mono text-slate-200">#00{targetUser.id}</span>
+                <span className="text-slate-500 text-[10px] uppercase block tracking-wider">OPERATOR IDENTIFIER</span>
+                <span className="text-slate-200 font-bold">#00{targetUser.id}</span>
               </div>
 
               <div>
-                <span className="text-slate-500 uppercase tracking-wider text-[10px] block">Department</span>
+                <span className="text-slate-500 text-[10px] uppercase block tracking-wider">ASSIGNED DIVISION</span>
                 <span className="text-slate-200">{targetUser.department || 'Security Operations'}</span>
               </div>
 
               <div>
-                <span className="text-slate-500 uppercase tracking-wider text-[10px] block">SecOps Credits</span>
-                <span className="font-mono text-cyan-400 font-bold">{targetUser.credits} PTS</span>
+                <span className="text-slate-500 text-[10px] uppercase block tracking-wider">COMPUTATIONAL CREDITS</span>
+                <span className="text-cyan-400 font-bold text-sm">{targetUser.credits} PTS</span>
               </div>
 
               <div>
-                <span className="text-slate-500 uppercase tracking-wider text-[10px] block">API Secret Key</span>
+                <span className="text-slate-500 text-[10px] uppercase block tracking-wider">
+                  API SECRET TOKEN (DISCLOSURE)
+                </span>
                 {/* Vulnerability CN-SEC-01: Information Disclosure */}
-                <code className="text-amber-400 font-mono text-[11px] break-all">
+                <code className="text-amber-400 font-mono text-[11px] break-all bg-[#030508] p-1.5 border border-amber-900/40 block mt-1">
                   {targetUser.api_key || 'NOT_PROVISIONED'}
                 </code>
               </div>
@@ -320,25 +341,25 @@ export default function ProfilePage() {
           </div>
 
           {/* Credit Allocation Transfer Widget (Business Logic Flaw) */}
-          <div className="bg-[#111625] border border-slate-800 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-1">
+          <div className="bg-[#070b13] border border-[#152033] tactical-cut p-5 shadow-xl">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 mb-1">
               <Coins className="w-4 h-4 text-cyan-400" />
-              Credit Allocation Transfer
+              <span>CREDIT ALLOCATION DISPATCH</span>
             </h3>
-            <p className="text-[11px] text-slate-400 mb-3">
-              Reassign SecOps computational credits to another analyst
+            <p className="text-[11px] font-mono text-slate-400 mb-4">
+              REALLOCATE SECOPS COMPUTATIONAL CREDITS TO ANOTHER OPERATOR
             </p>
 
             {transferMsg && (
-              <div className="mb-3 p-2 rounded bg-cyan-950/40 border border-cyan-500/30 text-[11px] font-mono text-cyan-300 break-all">
+              <div className="mb-4 p-2.5 bg-cyan-950/40 border border-cyan-500/40 text-xs font-mono text-cyan-300 break-all">
                 {transferMsg}
               </div>
             )}
 
-            <form onSubmit={handleTransferCredits} className="space-y-3">
+            <form onSubmit={handleTransferCredits} className="space-y-3 font-mono text-xs">
               <div>
-                <label className="block text-[11px] text-slate-300 mb-1" htmlFor="transfer-recipient">
-                  Recipient Username
+                <label className="block text-[10px] uppercase text-slate-400 mb-1" htmlFor="transfer-recipient">
+                  Recipient Alias
                 </label>
                 <input
                   id="transfer-recipient"
@@ -346,14 +367,14 @@ export default function ProfilePage() {
                   required
                   value={transferRecipient}
                   onChange={(e) => setTransferRecipient(e.target.value)}
-                  placeholder="e.g. admin"
-                  className="w-full bg-[#0b1120] border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                  placeholder="e.g. admin or alice"
+                  className="w-full bg-[#030508] border border-[#1e293b] px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-slate-300 mb-1" htmlFor="transfer-amount">
-                  Amount (Credits)
+                <label className="block text-[10px] uppercase text-slate-400 mb-1" htmlFor="transfer-amount">
+                  Credit Quantity (Pts)
                 </label>
                 <input
                   id="transfer-amount"
@@ -362,15 +383,15 @@ export default function ProfilePage() {
                   value={transferAmount}
                   onChange={(e) => setTransferAmount(e.target.value)}
                   placeholder="100"
-                  className="w-full bg-[#0b1120] border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                  className="w-full bg-[#030508] border border-[#1e293b] px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded transition-colors cursor-pointer"
+                className="w-full tactical-btn tactical-btn-cyan text-xs py-2 cursor-pointer shadow-[0_0_12px_rgba(0,242,254,0.2)]"
               >
-                Execute Credit Reallocation
+                EXECUTE TRANSFER
               </button>
             </form>
           </div>
@@ -379,17 +400,19 @@ export default function ProfilePage() {
         {/* Right 2 Cols: Profile Edit Form, Uploads, Document Viewer */}
         <div className="lg:col-span-2 space-y-6">
           {/* Modify Profile Form */}
-          <div className="bg-[#111625] border border-slate-800 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-[#070b13] border border-[#152033] tactical-cut p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#152033]">
               <div>
-                <h3 className="text-base font-bold text-white">Modify Operator Profile</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Update contact coordinates and operational parameters
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                  MODIFY OPERATOR DOSSIER ATTRIBUTES
+                </h3>
+                <p className="text-xs font-mono text-slate-400 mt-0.5">
+                  UPDATE FIELD PARAMETERS & CLEARANCE TIER
                 </p>
               </div>
               {targetUser.id !== 1 && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                  IDOR DOSSIER #{targetUser.id}
+                <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/40 uppercase font-bold">
+                  IDOR TARGET #{targetUser.id}
                 </span>
               )}
             </div>
@@ -401,8 +424,8 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-name">
-                    Full Name
+                  <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-name">
+                    Full Name & Callout
                   </label>
                   <input
                     id="edit-name"
@@ -410,13 +433,13 @@ export default function ProfilePage() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#030508] border border-[#1e293b] px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-email">
-                    Email Address
+                  <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-email">
+                    Direct Email Node
                   </label>
                   <input
                     id="edit-email"
@@ -424,92 +447,92 @@ export default function ProfilePage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#030508] border border-[#1e293b] px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-phone">
-                    Direct Phone
+                  <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-phone">
+                    Comms Frequency / Phone
                   </label>
                   <input
                     id="edit-phone"
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#030508] border border-[#1e293b] px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-dept">
-                    Department Unit
+                  <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-dept">
+                    Department Sector
                   </label>
                   <input
                     id="edit-dept"
                     type="text"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-[#030508] border border-[#1e293b] px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-role">
-                  Security Role Clearance (Mass Assignment Flaw)
+                <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-role">
+                  Security Clearance Tier (Mass Assignment Flaw)
                 </label>
                 <select
                   id="edit-role"
                   value={role}
                   onChange={(e) => setRole(e.target.value as any)}
-                  className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-[#030508] border border-[#1e293b] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                 >
-                  <option value="user">User / Operator (Tier 1)</option>
+                  <option value="user">User / Operator (Tier 3)</option>
                   <option value="analyst">Analyst (Tier 2)</option>
                   <option value="admin">Administrator (Tier 1 CISO)</option>
                 </select>
-                <span className="text-[11px] text-slate-500 mt-1 block">
-                  Assign clearance tier directly to operator profile.
+                <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+                  Modify clearance parameter directly to execute privilege escalation.
                 </span>
               </div>
 
               <div>
-                <label className="block text-xs text-slate-300 mb-1" htmlFor="edit-bio">
-                  Operator Scope & Bio
+                <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1" htmlFor="edit-bio">
+                  Operator Synopsis & Bio
                 </label>
                 <textarea
                   id="edit-bio"
                   rows={2}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-[#030508] border border-[#1e293b] px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-400 font-mono tactical-cut-sm"
                 />
               </div>
 
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-semibold text-xs rounded-lg transition-all shadow-[0_0_15px_rgba(0,242,254,0.25)] cursor-pointer"
+                className="tactical-btn tactical-btn-cyan text-xs py-2.5 px-6 cursor-pointer shadow-[0_0_15px_rgba(0,242,254,0.25)]"
               >
-                Commit Changes
+                COMMIT DOSSIER RECORD
               </button>
             </form>
           </div>
 
           {/* File Upload Card (Unrestricted File Upload) */}
-          <div className="bg-[#111625] border border-slate-800 rounded-xl p-6">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-              <Upload className="w-5 h-5 text-cyan-400" />
-              Upload Telemetry Attachment or Avatar
+          <div className="bg-[#070b13] border border-[#152033] tactical-cut p-6 shadow-xl">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 mb-1">
+              <Upload className="w-4 h-4 text-cyan-400" />
+              <span>STORAGE UPLOAD GATEWAY (UNRESTRICTED)</span>
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Attach threat logs or profile icons directly to storage (No extension restrictions)
+            <p className="text-xs font-mono text-slate-400 mb-4">
+              ATTACH TELEMETRY LOGS, EXPLOITS, OR AVATAR GRAPHICS (NO MIME RESTRICTIONS)
             </p>
 
             {uploadMsg && (
-              <div className="mb-4 p-2.5 rounded bg-cyan-950/40 border border-cyan-500/30 text-xs font-mono text-cyan-300 break-all">
+              <div className="mb-4 p-3 bg-cyan-950/40 border border-cyan-500/40 text-xs font-mono text-cyan-300 break-all">
                 {uploadMsg}
               </div>
             )}
@@ -520,60 +543,60 @@ export default function ProfilePage() {
                   type="file"
                   required
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  className="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-cyan-400 hover:file:bg-slate-700 cursor-pointer"
+                  className="block w-full text-xs font-mono text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:border-0 file:text-xs file:font-mono file:font-bold file:bg-[#152033] file:text-cyan-400 hover:file:bg-cyan-500 hover:file:text-black cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 font-mono text-xs text-slate-300">
                 <input
                   id="is-avatar-box"
                   type="checkbox"
                   checked={isAvatar}
                   onChange={(e) => setIsAvatar(e.target.checked)}
-                  className="rounded border-slate-700 text-cyan-500 focus:ring-0 cursor-pointer"
+                  className="rounded border-[#1e293b] text-cyan-500 focus:ring-0 cursor-pointer"
                 />
-                <label htmlFor="is-avatar-box" className="text-xs text-slate-300 cursor-pointer">
-                  Assign this file as active profile avatar
+                <label htmlFor="is-avatar-box" className="cursor-pointer">
+                  Deploy as active agent visual avatar
                 </label>
               </div>
 
               <button
                 type="submit"
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                className="tactical-btn tactical-btn-neutral text-xs py-2 px-5 cursor-pointer"
               >
-                Upload Attachment
+                UPLOAD TO REPOSITORY
               </button>
             </form>
           </div>
 
           {/* Document Vault (Path Traversal Target) */}
-          <div className="bg-[#111625] border border-slate-800 rounded-xl p-6">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-              <FileText className="w-5 h-5 text-cyan-400" />
-              SecOps Document Vault Access
+          <div className="bg-[#070b13] border border-[#152033] tactical-cut p-6 shadow-xl">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 mb-1">
+              <FileText className="w-4 h-4 text-cyan-400" />
+              <span>DOCUMENT REPOSITORY VAULT (DIRECTORY TRAVERSAL)</span>
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Retrieve stored audit records and baseline scans
+            <p className="text-xs font-mono text-slate-400 mb-4">
+              DOWNLOAD STORED LOG ARTIFACTS AND HISTORICAL ARCHIVES
             </p>
 
-            <div className="flex items-center justify-between p-3.5 bg-[#0b1120] border border-slate-800 rounded-lg">
+            <div className="flex items-center justify-between p-3.5 bg-[#030508] border border-[#152033] tactical-cut-sm">
               <div>
-                <span className="font-semibold text-xs text-white block">sample_threat_report.txt</span>
-                <span className="text-[11px] text-slate-500">Baseline perimeter audit snapshot</span>
+                <span className="font-bold text-xs text-white block font-mono">sample_threat_report.txt</span>
+                <span className="text-[11px] text-slate-500 font-mono">Audited perimeter baseline report</span>
               </div>
 
               {/* Vulnerability CN-FILE-02: Path Traversal link */}
               <a
                 href="/api/download?file=sample_threat_report.txt"
                 target="_blank"
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs rounded transition-colors"
+                className="tactical-btn tactical-btn-cyan text-[11px] py-1.5 px-3"
               >
-                View Document &rarr;
+                RETRIEVE &rarr;
               </a>
             </div>
 
             <div className="mt-3 text-[11px] font-mono text-slate-500">
-              Vault Retrieval Endpoint: <code>/api/download?file=&lt;filename&gt;</code>
+              Direct Query Endpoint: <code>/api/download?file=&lt;filepath&gt;</code>
             </div>
           </div>
         </div>

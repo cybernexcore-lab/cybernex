@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { KeyRound, ArrowRight, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { KeyRound, ArrowRight, CheckCircle2, AlertTriangle, ArrowLeft, ShieldCheck, Terminal, Cpu } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -27,13 +27,13 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setSecurityQuestion(data.user.security_question);
-        // Vulnerability CN-MISC-02: Leaked reset token
+        // CN-MISC-02: Leaked reset token
         if (data._debug_token) {
           setDebugTokenLeak(data._debug_token);
         }
         setStep(2);
       } else {
-        setError(data.error || 'Operator not found');
+        setError(data.error || 'Operator record not indexed in defensive directory');
       }
     } catch (err: any) {
       setError(err.message);
@@ -77,10 +77,10 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSuccess('Passkey successfully reset! You can now log in.');
+        setSuccess('Cryptographic passkey rotated successfully. Operator clearance reinstated.');
         setStep(4);
       } else {
-        setError(data.error || 'Reset failed');
+        setError(data.error || 'Passkey rotation rejected');
       }
     } catch (err: any) {
       setError(err.message);
@@ -88,56 +88,72 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-160px)] px-4">
-      <div className="w-full max-w-md bg-[#111625] border border-slate-800 rounded-2xl p-8 shadow-2xl relative">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-amber-400 to-rose-600 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.25)] mb-4">
-            <KeyRound className="w-6 h-6 text-slate-950" />
+    <div className="flex items-center justify-center min-h-[calc(100vh-220px)] px-4">
+      <div className="w-full max-w-lg bg-[#070b13] border border-[#152033] tactical-cut p-8 sm:p-9 shadow-2xl relative">
+        {/* Tactical Header */}
+        <div className="flex items-center justify-between pb-5 mb-6 border-b border-[#152033]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#030508] border border-amber-500/40 flex items-center justify-center tactical-cut-sm shadow-[0_0_15px_rgba(255,184,0,0.2)]">
+              <KeyRound className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold uppercase tracking-wider text-white">
+                PASSKEY RECOVERY PROTOCOL
+              </h1>
+              <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                DEFENSIVE IDENTITY CHALLENGE & TOKEN ROTATION
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-bold text-white">Passkey Recovery Gate</h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Defensive identity challenge and clearance reset
-          </p>
+          <span className="font-mono text-[10px] px-2 py-0.5 border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold uppercase">
+            STEP 0{step} // 03
+          </span>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs font-mono flex items-center gap-2">
+          <div className="mb-5 p-3.5 bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono flex items-center gap-2.5">
             <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{error}</span>
+            <span className="break-all">{error}</span>
           </div>
         )}
 
         {/* Leaked Token Comment / Notice */}
         {debugTokenLeak && step === 2 && (
-          <div className="mb-4 p-2.5 rounded bg-amber-950/40 border border-amber-500/30 text-amber-300 text-[11px] font-mono">
-            {/* Vulnerability CN-MISC-02: Debug Token Leak */}
-            <span className="text-slate-400">DEBUG_TOKEN_EXPOSED: </span>
-            <span className="font-bold underline">{debugTokenLeak}</span>
+          <div className="mb-5 p-3 bg-amber-950/30 border border-amber-500/40 text-amber-300 text-xs font-mono flex flex-col gap-1">
+            <span className="text-[10px] text-amber-400/70 uppercase tracking-wider">
+              [CN-AUTH-03] DEBUG LOG LEAK DETECTED:
+            </span>
+            <span className="font-bold underline text-amber-200">{debugTokenLeak}</span>
           </div>
         )}
 
         {/* Step 1: Username */}
         {step === 1 && (
-          <form onSubmit={handleFindUser} className="space-y-4">
+          <form onSubmit={handleFindUser} className="space-y-5">
             <div>
-              <label className="block text-xs text-slate-300 mb-1" htmlFor="forgot-user">
-                Operator Handle / ID
+              <label className="flex items-center justify-between text-xs font-mono uppercase text-slate-300 mb-2" htmlFor="forgot-user">
+                <span>Target Operator Identifier</span>
+                <span className="text-[10px] text-slate-500">HANDLE / ALIAS</span>
               </label>
-              <input
-                id="forgot-user"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. admin or alice"
-                className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
-              />
+              <div className="relative">
+                <input
+                  id="forgot-user"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. admin or alice"
+                  className="w-full bg-[#030508] border border-[#1e293b] px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors tactical-cut-sm"
+                />
+                <Terminal className="w-4 h-4 text-slate-500 absolute right-3.5 top-3.5 pointer-events-none" />
+              </div>
             </div>
+
             <button
               type="submit"
-              className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full tactical-btn tactical-btn-cyan text-xs py-3 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,242,254,0.25)]"
             >
-              <span>Locate Identity Dossier</span>
+              <span>LOCATE OPERATOR DOSSIER</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -145,17 +161,19 @@ export default function ForgotPasswordPage() {
 
         {/* Step 2: Security Question */}
         {step === 2 && (
-          <form onSubmit={handleVerifyAnswer} className="space-y-4">
+          <form onSubmit={handleVerifyAnswer} className="space-y-5">
             <div>
-              <label className="block text-xs text-slate-300 mb-1">Assigned Security Challenge</label>
-              <div className="p-2.5 bg-[#0b1120] border border-slate-800 rounded-lg text-xs font-mono text-cyan-300">
+              <label className="text-xs font-mono uppercase text-slate-400 block mb-1.5">
+                REGISTERED SECURITY CHALLENGE
+              </label>
+              <div className="p-3 bg-[#030508] border border-cyan-500/30 text-xs font-mono text-cyan-300">
                 {securityQuestion}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-slate-300 mb-1" htmlFor="forgot-answer">
-                Your Answer
+              <label className="text-xs font-mono uppercase text-slate-300 block mb-1.5" htmlFor="forgot-answer">
+                CRYPTOGRAPHIC VERIFICATION ANSWER
               </label>
               <input
                 id="forgot-answer"
@@ -163,16 +181,16 @@ export default function ForgotPasswordPage() {
                 required
                 value={securityAnswer}
                 onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder="Enter answer..."
-                className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                placeholder="Submit response string..."
+                className="w-full bg-[#030508] border border-[#1e293b] px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors tactical-cut-sm"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full tactical-btn tactical-btn-cyan text-xs py-3 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,242,254,0.25)]"
             >
-              <span>Verify Security Answer</span>
+              <span>VALIDATE IDENTITY RESPONSE</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -180,10 +198,10 @@ export default function ForgotPasswordPage() {
 
         {/* Step 3: Token & New Password */}
         {step === 3 && (
-          <form onSubmit={handleResetPass} className="space-y-4">
+          <form onSubmit={handleResetPass} className="space-y-5">
             <div>
-              <label className="block text-xs text-slate-300 mb-1" htmlFor="token-input">
-                Authorization Reset Token
+              <label className="text-xs font-mono uppercase text-slate-300 block mb-1.5" htmlFor="token-input">
+                RECOVERY AUTHORIZATION TOKEN
               </label>
               <input
                 id="token-input"
@@ -192,13 +210,13 @@ export default function ForgotPasswordPage() {
                 value={resetToken}
                 onChange={(e) => setResetToken(e.target.value)}
                 placeholder="e.g. ADM-RESET-7721"
-                className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                className="w-full bg-[#030508] border border-[#1e293b] px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors tactical-cut-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-slate-300 mb-1" htmlFor="new-pass-input">
-                New Passkey
+              <label className="text-xs font-mono uppercase text-slate-300 block mb-1.5" htmlFor="new-pass-input">
+                PROVISION NEW CIPHER PASSKEY
               </label>
               <input
                 id="new-pass-input"
@@ -206,16 +224,16 @@ export default function ForgotPasswordPage() {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full bg-[#0b1120] border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                placeholder="••••••••••••••••"
+                className="w-full bg-[#030508] border border-[#1e293b] px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors tactical-cut-sm"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full tactical-btn tactical-btn-cyan text-xs py-3 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,242,254,0.25)]"
             >
-              <span>Commit New Passkey</span>
+              <span>COMMIT ROTATED PASSKEY</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -223,26 +241,29 @@ export default function ForgotPasswordPage() {
 
         {/* Step 4: Finished */}
         {step === 4 && (
-          <div className="text-center space-y-4 py-4">
-            <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-            <p className="text-sm font-semibold text-white">{success}</p>
+          <div className="text-center space-y-5 py-4">
+            <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+            </div>
+            <p className="text-sm font-mono text-emerald-300 font-semibold">{success}</p>
             <Link
               href="/login"
-              className="inline-block py-2.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs rounded-lg transition-colors"
+              className="inline-flex tactical-btn tactical-btn-cyan text-xs py-2.5 px-6"
             >
-              Return to Login Gate &rarr;
+              RETURN TO AUTHENTICATION GATE &rarr;
             </Link>
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+        <div className="mt-8 pt-5 border-t border-[#152033] flex items-center justify-between text-xs font-mono text-slate-500">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+            className="inline-flex items-center gap-1.5 text-slate-400 hover:text-cyan-400 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Authentication</span>
+            <span>BACK TO GATE</span>
           </Link>
+          <span>PROTOCOL // 0x4B</span>
         </div>
       </div>
     </div>
